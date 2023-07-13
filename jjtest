@@ -1,0 +1,63 @@
+import UIKit
+import CoreLocation
+
+class CustomViewController: UIViewController {
+    @IBOutlet weak var locationLabel: UILabel!
+    @IBOutlet weak var photoImageView: UIImageView!
+
+    private let locationManager = CLLocationManager()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupLocationManager()
+    }
+
+    private func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+}
+
+extension CustomViewController: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        locationLabel.text = "Latitude: \(location.coordinate.latitude), Longitude: \(location.coordinate.longitude)"
+    }
+}
+
+extension CustomViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    @IBAction func takePhoto() {
+        let photo = UIImagePickerController()
+        photo.delegate = self
+        photo.sourceType = .camera
+        photo.allowsEditing = false
+        present(photo, animated: true)
+    }
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        if let photo = info[.originalImage] as? UIImage {
+            photoImageView.image = photo
+        }
+
+        picker.dismiss(animated: true)
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = CustomViewController()
+        window?.makeKeyAndVisible()
+        return true
+    }
+}
+
